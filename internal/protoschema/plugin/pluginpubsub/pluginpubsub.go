@@ -17,8 +17,10 @@ package pluginpubsub
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/bufbuild/protoplugin"
+	"github.com/bufbuild/protoschema-plugins/internal/protoschema/normalize"
 	"github.com/bufbuild/protoschema-plugins/internal/protoschema/pubsub"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
@@ -30,6 +32,18 @@ func Handle(
 	responseWriter protoplugin.ResponseWriter,
 	request protoplugin.Request,
 ) error {
+	var normalizerOpts []normalize.NormalizerOption
+	for _, param := range strings.Split(request.Parameter(), ",") {
+		param = strings.TrimSpace(param)
+		if param == "" {
+			continue
+		}
+		switch param {
+		case "preserve_open_enums=true":
+			normalizerOpts = append(normalizerOpts, normalize.WithPreserveOpenEnums())
+		}
+	}
+
 	fileDescriptors, err := request.FileDescriptorsToGenerate()
 	if err != nil {
 		return err
@@ -37,7 +51,7 @@ func Handle(
 	for _, fileDescriptor := range fileDescriptors {
 		for i := range fileDescriptor.Messages().Len() {
 			messageDescriptor := fileDescriptor.Messages().Get(i)
-			data, err := pubsub.Generate(messageDescriptor)
+			data, err := pubsub.Generate(messageDescriptor, normalizerOpts...)
 			if err != nil {
 				return err
 			}

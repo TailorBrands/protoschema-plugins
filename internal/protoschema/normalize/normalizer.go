@@ -27,8 +27,9 @@ import (
 
 // Normalizer is a normalizer for descriptor protos.
 type Normalizer struct {
-	skipTypes     []string
-	rootDesc      protoreflect.MessageDescriptor
+	skipTypes         []string
+	preserveOpenEnums bool
+	rootDesc          protoreflect.MessageDescriptor
 	rootPb        *descriptorpb.DescriptorProto
 	nameToMangled map[string]string
 	mangledToName map[string]string
@@ -153,7 +154,7 @@ func (n *Normalizer) inlineFieldRefs(
 	switch field.GetType() {
 	case descriptorpb.FieldDescriptorProto_TYPE_ENUM:
 		fieldDesc := msgDesc.Fields().ByName(protoreflect.Name(field.GetName()))
-		if !fieldDesc.Enum().IsClosed() {
+		if !fieldDesc.Enum().IsClosed() && !n.preserveOpenEnums {
 			// Convert to int32.
 			field.Type = descriptorpb.FieldDescriptorProto_TYPE_INT32.Enum()
 			field.TypeName = nil

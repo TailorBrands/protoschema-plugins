@@ -30,8 +30,8 @@ const (
 
 // Generate generates a PubSub schema in the form of a single self-contained messaged normalized to
 // proto2 for the given message descriptor.
-func Generate(input protoreflect.MessageDescriptor) (string, error) {
-	normalizer := normalize.NewNormalizer()
+func Generate(input protoreflect.MessageDescriptor, opts ...normalize.NormalizerOption) (string, error) {
+	normalizer := normalize.NewNormalizer(opts...)
 	rootMsg, err := normalizer.Normalize(input)
 	if err != nil {
 		return "", err

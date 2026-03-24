@@ -23,3 +23,11 @@ func WithSkipTypes(skipTypes ...string) NormalizerOption {
 		n.skipTypes = skipTypes
 	}
 }
+
+// WithPreserveOpenEnums returns a new NormalizerOption that preserves open
+// enums as enum types instead of converting them to int32.
+func WithPreserveOpenEnums() NormalizerOption {
+	return func(n *Normalizer) {
+		n.preserveOpenEnums = true
+	}
+}
